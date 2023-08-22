@@ -20,7 +20,7 @@ func main() {
 	sha512 := flagSet.Bool("sha512", false, "Apply SHA512 bucketing")
 	minFileSize := flagSet.Int64("minfilesize", 1, "Minimum file size in bytes")
 	makeHardLinks := flagSet.Bool("makehardlinks", false, "Make hard links of probable-duplicates")
-	recursive := flagSet.Bool("r", false, "Recusive")
+	recursive := flagSet.Bool("r", false, "Recursive")
 	verbose := flagSet.Bool("v", false, "Verbose")
 	err := flagSet.Parse(os.Args[1:])
 	if err != nil {
