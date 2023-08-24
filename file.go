@@ -44,7 +44,7 @@ func (bm fileBucketer) Bucket(in Buckets) (Buckets, error) {
 
 		for i := range bucket {
 			path := bucket[i]
-			f, err := os.Open(path)
+			f, err := os.Open(path.Path)
 			if err != nil {
 				os.Stderr.WriteString(fmt.Sprintf("Unable to open %s: %v\n", path, err))
 				return nil, err

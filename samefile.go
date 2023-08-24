@@ -1,10 +1,7 @@
 package gourd
 
 import (
-	"io/fs"
 	"os"
-
-	"golang.org/x/exp/maps"
 )
 
 type (
@@ -23,16 +20,13 @@ func (bm SameFilterBucketer) Bucket(in Buckets) (Buckets, error) {
 			continue
 		}
 
-		filteredFiles := map[Path]fs.FileInfo{}
+		filteredFiles := []File{}
 
 		for _, toTest := range bucket {
-			toTestFi, err := os.Stat(toTest)
-			if err != nil {
-				return nil, err
-			}
+			toTestFi := toTest.FileInfo
 			duplicate := false
 			for _, filteredFI := range filteredFiles {
-				duplicate = os.SameFile(toTestFi, filteredFI)
+				duplicate = os.SameFile(toTestFi, filteredFI.FileInfo)
 				if duplicate {
 					break
 				}
@@ -40,10 +34,10 @@ func (bm SameFilterBucketer) Bucket(in Buckets) (Buckets, error) {
 			if duplicate {
 				continue
 			}
-			filteredFiles[toTest] = toTestFi
+			filteredFiles = append(filteredFiles, toTest)
 		}
 
-		out[currentBucketName] = maps.Keys(filteredFiles)
+		out[currentBucketName] = filteredFiles
 	}
 
 	return out, nil
