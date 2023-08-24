@@ -45,6 +45,14 @@ func main() {
 	}
 	// os.Stderr.WriteString(fmt.Sprintf("Found buckets: %+v\n", buckets))
 
+	var numFiles int
+	var totalSize int64
+	for _, bucket := range buckets {
+		numFiles += len(bucket)
+		totalSize += bucket.TotalFileSize()
+	}
+	os.Stderr.WriteString(fmt.Sprintf("Found %d Files Totaling %s\n", numFiles, gourd.HumanReadableSize(totalSize)))
+
 	bucketers := setupBucketers(config)
 
 	buckets, err = bucketers.Bucket(buckets)
@@ -180,15 +188,15 @@ func makeHardLinks(probableDuplicates gourd.Buckets) {
 		masterFilePath := bucket[0]
 		for i := 1; i < len(bucket); i++ {
 			oldPath := bucket[i]
-			tempPath := oldPath + suffix
-			err := os.Rename(oldPath, tempPath)
+			tempPath := oldPath.Path + suffix
+			err := os.Rename(oldPath.Path, tempPath)
 			if err != nil {
 				os.Stderr.WriteString(fmt.Sprintf("Error renaming duplicate file %s: %v\n", oldPath, err))
 				os.Exit(1)
 			}
-			if err = os.Link(masterFilePath, oldPath); err != nil {
+			if err = os.Link(masterFilePath.Path, oldPath.Path); err != nil {
 				os.Stderr.WriteString(fmt.Sprintf("Error linking duplicate file %s: %v\n", oldPath, err))
-				if err = os.Rename(tempPath, oldPath); err != nil {
+				if err = os.Rename(tempPath, oldPath.Path); err != nil {
 					os.Stderr.WriteString(fmt.Sprintf("Error renaming duplicate temp file %s after previous error: %v\n", tempPath, err))
 				}
 				os.Exit(1)

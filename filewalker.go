@@ -46,7 +46,15 @@ func (dw DirWalker) Walk(rootPath string) (Buckets, error) {
 			return nil
 		}
 
-		buckets[key] = append(buckets[key], path)
+		fileInfo, err := d.Info()
+		if err != nil {
+			return err
+		}
+
+		buckets[key] = append(buckets[key], File{
+			Path:     path,
+			FileInfo: fileInfo,
+		})
 		return nil
 	})
 
