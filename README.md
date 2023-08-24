@@ -47,8 +47,10 @@ TODO
   - configurable from commandline (-sha256 flag)
 - [x] sha512
   - configurable from commandline (-sha512 flag)
-- [x] firstbyte
-- [x] lastbyte
+- [x] firstbytes
+  - number of bytes configurable with -firstbytessize flag
+- [x] lastbytes
+  - number of bytes configurable with -lastbytessize flag
 - [x] filesize
 - mimetype
   - https://github.com/gabriel-vasile/mimetype perhaps?

@@ -8,7 +8,7 @@ import (
 )
 
 type (
-	// SameFilterBucketer filters out files that appear to already be the same file on disk, as per `os.SameFile`
+	// SameFilterBucketer filters out files that appear to already be the same file on disk, as per `os.SameFile`.
 	SameFilterBucketer struct{}
 )
 

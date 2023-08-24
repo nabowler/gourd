@@ -43,6 +43,6 @@ func (b StattedBucketer) Bucket(in Buckets) (Buckets, error) {
 		numFilesAfter += len(bucket)
 	}
 
-	os.Stderr.WriteString(fmt.Sprintf("%10s: Before: %d|%d After: %d|%d Eliminated: %d|%d Took: %s\n", b.StepName, sizeBefore, numFilesBefore, sizeAfter, numFilesAfter, sizeBefore-sizeAfter, numFilesBefore-numFilesAfter, duration.String()))
+	os.Stderr.WriteString(fmt.Sprintf("%11s: Before: %d|%d After: %d|%d Eliminated: %d|%d Took: %s\n", b.StepName, sizeBefore, numFilesBefore, sizeAfter, numFilesAfter, sizeBefore-sizeAfter, numFilesBefore-numFilesAfter, duration.String()))
 	return onlyPossiblesAfter, nil
 }
