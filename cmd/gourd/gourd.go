@@ -64,8 +64,8 @@ func main() {
 
 func parseCommandLineArgs() cliConfig {
 	flagSet := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	firstByteSize := flagSet.Int64("firstbytessize", 1, "Number of bytes to check at the start of the file. Must be > 0")
-	lastByteSize := flagSet.Int64("lastbytessize", 1, "Number of bytes to check at the end of the file. Must be > 0")
+	firstByteSize := flagSet.Int64("firstbytessize", 64, "Number of bytes to check at the start of the file. Must be > 0")
+	lastByteSize := flagSet.Int64("lastbytessize", 64, "Number of bytes to check at the end of the file. Must be > 0")
 	md5 := flagSet.Bool("md5", false, "Apply MD5 bucketing")
 	sha1 := flagSet.Bool("sha1", false, "Apply SHA1 bucketing")
 	sha256 := flagSet.Bool("sha256", false, "Apply SHA256 bucketing")
