@@ -51,7 +51,7 @@ func main() {
 		numFiles += len(bucket)
 		totalSize += bucket.TotalFileSize()
 	}
-	os.Stderr.WriteString(fmt.Sprintf("Found %d Files Totaling %s\n", numFiles, gourd.HumanReadableSize(totalSize)))
+	os.Stderr.WriteString(fmt.Sprintf("Found %d files totaling %s\n", numFiles, gourd.HumanReadableSize(totalSize)))
 
 	bucketers := setupBucketers(config)
 
@@ -63,7 +63,17 @@ func main() {
 
 	// os.Stderr.WriteString(fmt.Sprintf("Final Buckets:\n%+v\n", buckets))
 	probableDuplicates := buckets.PossibleDuplicates()
-	fmt.Printf("Probable Duplicates:\n%s\n", buckets.PossibleDuplicates())
+	numFiles = 0
+	totalSize = 0
+	var finalSize int64
+	for _, bucket := range probableDuplicates {
+		numFiles += len(bucket)
+		totalSize += bucket.TotalFileSize()
+		finalSize += bucket[0].FileInfo.Size()
+	}
+	os.Stderr.WriteString(fmt.Sprintf("Found %d duplicate files with %s reclaimable space\n", numFiles, gourd.HumanReadableSize(totalSize-finalSize)))
+
+	fmt.Printf("Duplicates:\n%s\n", buckets.PossibleDuplicates())
 
 	if config.makeHardLinks {
 		makeHardLinks(probableDuplicates)

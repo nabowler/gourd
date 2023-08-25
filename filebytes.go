@@ -1,6 +1,7 @@
 package gourd
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -31,7 +32,7 @@ func NewFirstBytesBucketer(numBytes int64) Bucketer {
 			if n != len(firstBytes) {
 				return "", false, fmt.Errorf("No bytes read")
 			}
-			return fmt.Sprintf("FirstBytes:%x", firstBytes), true, nil
+			return fmt.Sprintf("FirstBytes:%s", base64.StdEncoding.EncodeToString(firstBytes)), true, nil
 		},
 	}
 }
@@ -61,7 +62,7 @@ func NewLastBytesBucketer(numBytes int64) Bucketer {
 			if n != len(lastBytes) {
 				return "", false, fmt.Errorf("No bytes read")
 			}
-			return fmt.Sprintf("LastBytes:%x", lastBytes), true, nil
+			return fmt.Sprintf("LastBytes:%s", base64.StdEncoding.EncodeToString(lastBytes)), true, nil
 		},
 	}
 }
