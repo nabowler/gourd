@@ -82,6 +82,11 @@ func main() {
 
 func parseCommandLineArgs() cliConfig {
 	flagSet := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	flagSet.Usage = func() {
+		os.Stderr.WriteString(fmt.Sprintf("Usage: %s [options] PATH\n", os.Args[0]))
+		flagSet.PrintDefaults()
+		os.Stderr.WriteString("-md5, -sha1, -sha256, and -sha512 are additive. Defaults to just -sha1")
+	}
 	firstByteSize := flagSet.Int64("firstbytessize", 64, "Number of bytes to check at the start of the file. Must be > 0")
 	lastByteSize := flagSet.Int64("lastbytessize", 64, "Number of bytes to check at the end of the file. Must be > 0")
 	md5 := flagSet.Bool("md5", false, "Apply MD5 bucketing")
@@ -89,7 +94,7 @@ func parseCommandLineArgs() cliConfig {
 	sha256 := flagSet.Bool("sha256", false, "Apply SHA256 bucketing")
 	sha512 := flagSet.Bool("sha512", false, "Apply SHA512 bucketing")
 	minFileSize := flagSet.Int64("minfilesize", 1, "Minimum file size in bytes")
-	makeHardLinks := flagSet.Bool("makehardlinks", false, "Make hard links of probable-duplicates")
+	makeHardLinks := flagSet.Bool("makehardlinks", false, "Make hard links of duplicate files")
 	recursive := flagSet.Bool("r", false, "Recursive")
 	verbose := flagSet.Bool("v", false, "Verbose")
 	err := flagSet.Parse(os.Args[1:])
@@ -99,7 +104,7 @@ func parseCommandLineArgs() cliConfig {
 	}
 
 	if flagSet.NArg() != 1 {
-		os.Stderr.WriteString(fmt.Sprintf("Usage: %s PATH\n", os.Args[0]))
+		flagSet.Usage()
 		os.Exit(1)
 	}
 
