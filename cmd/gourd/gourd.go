@@ -22,7 +22,8 @@ type (
 		makeHardLinks bool
 		recursive     bool
 		verbose       bool
-		rootPath      string
+		useDevID      bool
+		rootPaths     []string
 	}
 )
 
@@ -36,8 +37,9 @@ func main() {
 		Exclude: map[string]struct{}{
 			".git": {},
 		},
-		Recursive: config.recursive,
-	}.Walk(config.rootPath)
+		Recursive:   config.recursive,
+		AppendDevID: config.useDevID,
+	}.Walk(config.rootPaths...)
 
 	if err != nil {
 		os.Stderr.WriteString(fmt.Sprintf("Error: %v\n", err))
@@ -85,7 +87,7 @@ func parseCommandLineArgs() cliConfig {
 	flagSet.Usage = func() {
 		os.Stderr.WriteString(fmt.Sprintf("Usage: %s [options] PATH\n", os.Args[0]))
 		flagSet.PrintDefaults()
-		os.Stderr.WriteString("-md5, -sha1, -sha256, and -sha512 are additive. Defaults to just -sha1")
+		os.Stderr.WriteString("-md5, -sha1, -sha256, and -sha512 are additive. Defaults to just -sha1\n")
 	}
 	firstByteSize := flagSet.Int64("firstbytessize", 64, "Number of bytes to check at the start of the file. Must be > 0")
 	lastByteSize := flagSet.Int64("lastbytessize", 64, "Number of bytes to check at the end of the file. Must be > 0")
@@ -96,14 +98,16 @@ func parseCommandLineArgs() cliConfig {
 	minFileSize := flagSet.Int64("minfilesize", 1, "Minimum file size in bytes")
 	makeHardLinks := flagSet.Bool("makehardlinks", false, "Make hard links of duplicate files")
 	recursive := flagSet.Bool("r", false, "Recursive")
-	verbose := flagSet.Bool("v", false, "Verbose")
+	verbose := flagSet.Bool("v", false, "Verbose. Output information about each step")
+	ignoreDevID := flagSet.Bool("ignoredeviceid", false, "Ignore device ID on initial bucketing. Not supported by all operating systems")
+
 	err := flagSet.Parse(os.Args[1:])
 	if err != nil {
 		flagSet.Usage()
 		os.Exit(1)
 	}
 
-	if flagSet.NArg() != 1 {
+	if flagSet.NArg() == 0 {
 		flagSet.Usage()
 		os.Exit(1)
 	}
@@ -124,7 +128,7 @@ func parseCommandLineArgs() cliConfig {
 		os.Exit(1)
 	}
 
-	rootPath := flagSet.Arg(0)
+	rootPaths := flagSet.Args()
 	return cliConfig{
 		firstByteSize: *firstByteSize,
 		lastByteSize:  *lastByteSize,
@@ -136,7 +140,8 @@ func parseCommandLineArgs() cliConfig {
 		makeHardLinks: *makeHardLinks,
 		recursive:     *recursive,
 		verbose:       *verbose,
-		rootPath:      rootPath,
+		rootPaths:     rootPaths,
+		useDevID:      !*ignoreDevID,
 	}
 }
 
@@ -199,6 +204,7 @@ func must[T any](f func() (T, error)) T {
 
 func makeHardLinks(probableDuplicates gourd.Buckets) {
 	suffix := tempFileSuffix()
+	anyError := false
 	for _, bucket := range probableDuplicates {
 		masterFilePath := bucket[0]
 		for i := 1; i < len(bucket); i++ {
@@ -206,21 +212,27 @@ func makeHardLinks(probableDuplicates gourd.Buckets) {
 			tempPath := oldPath.Path + suffix
 			err := os.Rename(oldPath.Path, tempPath)
 			if err != nil {
-				os.Stderr.WriteString(fmt.Sprintf("Error renaming duplicate file %s: %v\n", oldPath, err))
-				os.Exit(1)
+				os.Stderr.WriteString(fmt.Sprintf("Error renaming duplicate file %s: %v\n", oldPath.Path, err))
+				anyError = true
+				continue
 			}
 			if err = os.Link(masterFilePath.Path, oldPath.Path); err != nil {
-				os.Stderr.WriteString(fmt.Sprintf("Error linking duplicate file %s: %v\n", oldPath, err))
+				os.Stderr.WriteString(fmt.Sprintf("Error linking duplicate file %s: %v\n", oldPath.Path, err))
 				if err = os.Rename(tempPath, oldPath.Path); err != nil {
 					os.Stderr.WriteString(fmt.Sprintf("Error renaming duplicate temp file %s after previous error: %v\n", tempPath, err))
 				}
-				os.Exit(1)
+				anyError = true
+				continue
 			}
 			if err = os.Remove(tempPath); err != nil {
 				os.Stderr.WriteString(fmt.Sprintf("Error removing duplicate temp file %s after hardlink: %v\n", tempPath, err))
-				os.Exit(1)
+				anyError = true
 			}
 		}
+	}
+
+	if anyError {
+		os.Exit(2)
 	}
 }
 
