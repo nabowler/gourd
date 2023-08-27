@@ -6,6 +6,8 @@ import (
 
 type (
 	// SameFilterBucketer filters out files that appear to already be the same file on disk, as per `os.SameFile`.
+	// Unlike most other Bucketer implementations, this will only remove entries from Buckets rather than create
+	// new Buckets.
 	SameFilterBucketer struct{}
 )
 

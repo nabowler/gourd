@@ -34,8 +34,8 @@ func SubBucketName(currentBucketName, newBucketName string) string {
 
 func (b Bucket) TotalFileSize() int64 {
 	var totalSize int64
-	for _, path := range b {
-		totalSize += path.FileInfo.Size()
+	for _, file := range b {
+		totalSize += file.FileInfo.Size()
 	}
 	return totalSize
 }

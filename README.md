@@ -23,13 +23,13 @@ go build -mod=readonly -ldflags="-s -w" cmd/gourd/gourd.go
 
 With Go
 ```bash
-go install github.com/nabowler/gourd
+go install github.com/nabowler/gourd/cmd/gourd
 ```
 
 ## Use
 
 ```bash
-gourd -r -v -sha1 path/to/directories
+gourd -r -v -sha1 path/to/directory
 ```
 
 ## Benchmarks and Comparison to rdfind
@@ -52,8 +52,6 @@ TODO
 - [x] lastbytes
   - number of bytes configurable with -lastbytessize flag
 - [x] filesize
-- mimetype
-  - https://github.com/gabriel-vasile/mimetype perhaps?
 - [x] statted
   - Outputs information about the number of files before and after an inner Bucketer
   - configurable from commandline (-v flag)
