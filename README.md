@@ -4,7 +4,7 @@ Gourd is a command line tool to find duplicate files.
 
 ## Acknowledgements
 
-Gourd is inspired by my use of [rdfind](https://github.com/pauldreik/rdfind), but is not designed to be compatible with rdfind in terms of output or command line flags. Gourd is not related to, a port of, or based on the source of `rdfind`.
+Gourd is inspired by my use of [rdfind](https://github.com/pauldreik/rdfind), but is not designed to be compatible with rdfind in terms of output, command line flags, or feature set. Gourd is not related to, a port of, or based on the source of `rdfind`.
 
 Gourd came from a usecase where I wanted to deduplicate data on a server, but could not install `rdfind` natively and could not use `rdfind` from my local machine due to differing libc versions. I was able to work around this problem using Docker, but it is unwieldy and cumbersome to do so, and wanted an easily-portable solution.
 
@@ -34,6 +34,12 @@ go install github.com/nabowler/gourd/cmd/gourd@latest
 gourd -r -v -sha1 path/to/directory [path/to/directory2 ...]
 ```
 
+See `gourd -h` for all available options
+
+# Just
+
+A [justfile](https://github.com/casey/just) is provided for convenience.
+
 # Benchmarks and Comparison to rdfind
 
 ## Benchmarks
@@ -41,7 +47,7 @@ gourd -r -v -sha1 path/to/directory [path/to/directory2 ...]
 ### 11.7 GiB images containing 184 duplicate files
 
 ```sh
-$ hyperfine -w 5 -N  --export-markdown ~/gourd-rdfind-comparison.md 'gourd -r -md5 .' 'rdfind -makeresultsfile false -checksum md5 -dryrun true .' 'gourd -r -sha1 .' 'rdfind -makeresultsfile false -checksum sha1 -dryrun true .' 'gourd -r -sha256 .' 'gourd -r -sha512 .'
+$ hyperfine -w 5 -N  --export-markdown /tmp/gourd-rdfind-comparison.md 'gourd -r -md5 .' 'rdfind -makeresultsfile false -checksum md5 -dryrun true .' 'gourd -r -sha1 .' 'rdfind -makeresultsfile false -checksum sha1 -dryrun true .' 'gourd -r -sha256 .' 'gourd -r -sha512 .'
 Benchmark 1: gourd -r -md5 .
   Time (mean ± σ):     920.6 ms ±  45.0 ms    [User: 728.4 ms, System: 216.5 ms]
   Range (min … max):   835.5 ms … 989.4 ms    10 runs
@@ -84,6 +90,10 @@ Summary
 | `gourd -r -sha256 .` | 2636.1 ± 52.9 | 2555.3 | 2711.3 | 2.86 ± 0.15 |
 | `gourd -r -sha512 .` | 1914.6 ± 46.6 | 1830.3 | 1987.0 | 2.08 ± 0.11 |
 
+Notes:
+ - Results are system dependent
+ - The most consistency across systems for me seems to be that `gourd -sha256` is slower than `gourd -sha512`
+
 ## Comparisons
 
 ### Duplicates Found
@@ -113,30 +123,31 @@ Removed 9054 files due to unique sizes from list. 232 files left.
 
 ### Linked Dependencies
 ```sh
-$ ldd $(which rdfind)
-        linux-vdso.so.1 (0x00007ffd8ba03000)
-        libnettle.so.8 => /usr/lib/libnettle.so.8 (0x00007fec79fb7000)
-        libstdc++.so.6 => /usr/lib/libstdc++.so.6 (0x00007fec79c00000)
-        libgcc_s.so.1 => /usr/lib/libgcc_s.so.1 (0x00007fec79f8f000)
-        libc.so.6 => /usr/lib/libc.so.6 (0x00007fec79800000)
-        libm.so.6 => /usr/lib/libm.so.6 (0x00007fec79e9f000)
-        /lib64/ld-linux-x86-64.so.2 => /usr/lib64/ld-linux-x86-64.so.2 (0x00007fec7a06f000)
-
-$ ldd $(which gourd)
+$ ldd $(which gourd) $(which rdfind)
+~/go/bin/gourd:
         not a dynamic executable
+/usr/bin/rdfind:
+        linux-vdso.so.1 (0x00007ffcf3326000)
+        libnettle.so.8 => /usr/lib/libnettle.so.8 (0x00007fb2d6b20000)
+        libstdc++.so.6 => /usr/lib/libstdc++.so.6 (0x00007fb2d6800000)
+        libgcc_s.so.1 => /usr/lib/libgcc_s.so.1 (0x00007fb2d6afb000)
+        libc.so.6 => /usr/lib/libc.so.6 (0x00007fb2d6400000)
+        libm.so.6 => /usr/lib/libm.so.6 (0x00007fb2d6713000)
+        /lib64/ld-linux-x86-64.so.2 => /usr/lib64/ld-linux-x86-64.so.2 (0x00007fb2d6bcd000)
 ```
 
 ### Binary Size
 
 ```sh
-$ du -h $(which rdfind)
+$ du -h $(which gourd) $(which rdfind)
+1.5M    /home/nathan/go/bin/gourd
 96K     /usr/bin/rdfind
-
-$ du -h $(which gourd)
-2.3M    /home/nathan/go/bin/gourd
 ```
 
-Note: rdfind installed from system repos. gourd install via `go install`
+Notes:
+ - rdfind installed from system repos
+ - gourd installed via `just install`, which strips the binary
+   - Non-stripped gourd binary installed via `go install` is 2.3M
 
 
 
