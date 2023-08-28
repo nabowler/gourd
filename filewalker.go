@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/fs"
 	"path/filepath"
-	"reflect"
 	"syscall"
 )
 
@@ -71,9 +70,11 @@ func (dw DirWalker) Walk(rootPaths ...string) (Buckets, error) {
 				sys := fileInfo.Sys()
 				switch t := sys.(type) {
 				case *syscall.Stat_t:
+					// Linux, Unix, BSD, MacOS probably
 					key = fmt.Sprintf("%s::%d", key, t.Dev)
 				default:
-					fmt.Println(reflect.TypeOf(sys))
+					// Not a linux-like OS
+					// fmt.Println(reflect.TypeOf(sys))
 				}
 			}
 
