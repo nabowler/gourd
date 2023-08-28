@@ -109,7 +109,8 @@ Found 184 duplicate files with 220.1MiB reclaimable space
 ```
 
 ```sh
-$ rdfind -makeresultsfile false -checksum md5 -dryrun true .                                                                                                       (DRYRUN MODE) Now scanning ".", found 9286 files.
+$ rdfind -makeresultsfile false -checksum md5 -dryrun true .
+(DRYRUN MODE) Now scanning ".", found 9286 files.
 (DRYRUN MODE) Now have 9286 files in total.
 (DRYRUN MODE) Removed 0 files due to nonunique device and inode.
 (DRYRUN MODE) Total size is 12509236983 bytes or 12 GiB
@@ -177,9 +178,13 @@ Note: -md5, -sha1, -sha256, and -sha512 are additive and will be applied in that
 
 - [x] duplicate device and inode detection
 
+## To Do:
+- [ ] -exclude on CLI
+  - exlucdes a path
+  - Glob? Regex? TBD.
+
 ## To Consider
 
-- goroutines for Hash/file steps?
+- [ ] goroutines for Hash/file steps?
   - one per in bucket?
-- -exclude patterns
-  - for instance, could useful when only wanting to dedupwhilicate .jpg files in a mixed-media directory tree
+
