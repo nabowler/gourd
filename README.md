@@ -144,5 +144,4 @@ Note: -md5, -sha1, -sha256, and -sha512 are additive and will be applied in that
 - goroutines for Hash/file steps?
   - one per in bucket?
 - -exclude patterns
-  - for instance, could useful when only wanting to deduplicate .jpg files in a mixed-media directory tree
-- multiple paths/files as args (currently only accepts 1)
+  - for instance, could useful when only wanting to dedupwhilicate .jpg files in a mixed-media directory tree
