@@ -9,8 +9,9 @@ import (
 type (
 	// File is a path and FileInfo.
 	File struct {
-		Path     string
-		FileInfo os.FileInfo
+		Path           string
+		FileInfo       os.FileInfo
+		DuplicatePaths []string
 	}
 
 	// Bucket is a list of Files sharing common attributes
