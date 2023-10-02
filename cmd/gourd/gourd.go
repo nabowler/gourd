@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
 	"time"
 
 	"github.com/nabowler/gourd"
@@ -206,27 +207,34 @@ func makeHardLinks(probableDuplicates gourd.Buckets) {
 	suffix := tempFileSuffix()
 	anyError := false
 	for _, bucket := range probableDuplicates {
+		// for a bucket, prioritize the file with the most "duplicate paths"
+		// (existing hardlinks), as the master file.
+		sort.SliceStable(bucket, func(i, j int) bool {
+			return len(bucket[i].DuplicatePaths) > len(bucket[j].DuplicatePaths)
+		})
 		masterFilePath := bucket[0]
 		for i := 1; i < len(bucket); i++ {
-			oldPath := bucket[i]
-			tempPath := oldPath.Path + suffix
-			err := os.Rename(oldPath.Path, tempPath)
-			if err != nil {
-				os.Stderr.WriteString(fmt.Sprintf("Error renaming duplicate file %s: %v\n", oldPath.Path, err))
-				anyError = true
-				continue
-			}
-			if err = os.Link(masterFilePath.Path, oldPath.Path); err != nil {
-				os.Stderr.WriteString(fmt.Sprintf("Error linking duplicate file %s: %v\n", oldPath.Path, err))
-				if err = os.Rename(tempPath, oldPath.Path); err != nil {
-					os.Stderr.WriteString(fmt.Sprintf("Error renaming duplicate temp file %s after previous error: %v\n", tempPath, err))
+			// relink all paths of a file
+			for _, oldPath := range append(bucket[i].DuplicatePaths, bucket[i].Path) {
+				tempPath := oldPath + suffix
+				err := os.Rename(oldPath, tempPath)
+				if err != nil {
+					os.Stderr.WriteString(fmt.Sprintf("Error renaming duplicate file %s: %v\n", oldPath, err))
+					anyError = true
+					continue
 				}
-				anyError = true
-				continue
-			}
-			if err = os.Remove(tempPath); err != nil {
-				os.Stderr.WriteString(fmt.Sprintf("Error removing duplicate temp file %s after hardlink: %v\n", tempPath, err))
-				anyError = true
+				if err = os.Link(masterFilePath.Path, oldPath); err != nil {
+					os.Stderr.WriteString(fmt.Sprintf("Error linking duplicate file %s: %v\n", oldPath, err))
+					if err = os.Rename(tempPath, oldPath); err != nil {
+						os.Stderr.WriteString(fmt.Sprintf("Error renaming duplicate temp file %s after previous error: %v\n", tempPath, err))
+					}
+					anyError = true
+					continue
+				}
+				if err = os.Remove(tempPath); err != nil {
+					os.Stderr.WriteString(fmt.Sprintf("Error removing duplicate temp file %s after hardlink: %v\n", tempPath, err))
+					anyError = true
+				}
 			}
 		}
 	}

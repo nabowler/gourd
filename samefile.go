@@ -27,9 +27,10 @@ func (bm SameFilterBucketer) Bucket(in Buckets) (Buckets, error) {
 		for _, toTest := range bucket {
 			toTestFi := toTest.FileInfo
 			duplicate := false
-			for _, filteredFI := range filteredFiles {
+			for i, filteredFI := range filteredFiles {
 				duplicate = os.SameFile(toTestFi, filteredFI.FileInfo)
 				if duplicate {
+					filteredFiles[i].DuplicatePaths = append(filteredFiles[i].DuplicatePaths, toTest.Path)
 					break
 				}
 			}
