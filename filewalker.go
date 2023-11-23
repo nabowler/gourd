@@ -39,6 +39,19 @@ func (dw DirWalker) Walk(rootPaths ...string) (Buckets, error) {
 				return err
 			}
 
+			if d.Type()&fs.ModeSymlink != 0 {
+				// file is a symbolic link.
+				// we can ignore this file
+				// this fixes an issue where symbolic links to directories are treated
+				// as files and not directories, and later attempts to fingerprint the
+				// "file" causes an error
+				// for symbolic links to files, it feels sane to ignore them since they're
+				// not a true "duplicate" of any file.
+				// for symbolic links to directories, we _could_ recurse into the actual
+				// directory based on `dw.Recursive`, but for now, this is fine
+				return nil
+			}
+
 			if _, ok := dw.Exclude[path]; ok {
 				if d.IsDir() {
 					// if exclusion matches a directory, skip the entire directory
